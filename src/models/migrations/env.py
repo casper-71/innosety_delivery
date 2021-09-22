@@ -3,7 +3,7 @@ from logging.config import dictConfig
 from src.core.config.database_settings import DBSettings
 from src.core.logger import LOGGING
 from src.db.postgresql import Base
-from src.models import tickets, comments        # noqa: F401
+from src.models import order, zone, delivery        # noqa: F401
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool

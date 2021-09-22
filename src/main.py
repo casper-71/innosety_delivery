@@ -1,5 +1,4 @@
 import logging
-import aioredis
 import databases
 import uvicorn
 
@@ -9,8 +8,8 @@ from fastapi.responses import ORJSONResponse
 
 from src.core import logger
 from src.core.config.app_settings import AppSettings
-from src.db import redis, postgresql
-from src.api.v1 import ticket, comment
+from src.db import postgresql
+from src.api.v1 import delivery, order, zone
 
 # Применяем настройки логирования
 logging_config.dictConfig(logger.LOGGING)
@@ -48,25 +47,21 @@ async def startup():
     # Подключаемся к базам при старте сервера
     # Подключиться можем при работающем event-loop
     # Поэтому логика подключения происходит в асинхронной функции
-    redis.pool = aioredis.ConnectionPool.from_url(
-        app_config.redis_db.cache_dsn,
-        decode_responses=True,
-    )
 
-    redis.redis = aioredis.Redis(connection_pool=redis.pool)
     postgresql.database = await databases.Database(app_config.db.pg_dsn).connect()
 
 
 @app.on_event('shutdown')
 async def shutdown():
     # Отключаемся от баз при выключении сервера
-    await redis.pool.disconnect()
     await postgresql.database.disconnect()
 
 
 # Подключаем роутер к серверу, указав префикс /v1/<service>
 # Теги указываем для удобства навигации по документации
-# app.include_router(ticket.router, prefix='/v1/ticket', tags=['ticket'])
+app.include_router(delivery.router, prefix='/v1/delivery', tags=['delivery'])
+app.include_router(order.router, prefix='/v1/order', tags=['order'])
+app.include_router(zone.router, prefix='/v1/zone', tags=['zone'])
 
 
 if __name__ == '__main__':

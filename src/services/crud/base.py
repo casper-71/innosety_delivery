@@ -4,9 +4,6 @@ from uuid import UUID
 from pydantic import BaseModel
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
-from aioredis import Redis
-
-from src.core.modules import Cache
 from src.models.base_mixins import BaseMixin
 
 ModelType = TypeVar("ModelType", bound=BaseMixin)
@@ -15,7 +12,7 @@ UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 
 
 class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
-    def __init__(self, model: Type[ModelType], redis: Redis = None):
+    def __init__(self, model: Type[ModelType]):
         """
             CRUD object with default methods to Create, Read, Update, Delete (CRUD).
             **Parameters**
@@ -23,8 +20,6 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             * `schema`: A Pydantic model (schema) class
         """
         self.model = model
-        self.redis = redis
-        self.cache = Cache(db=self.redis)
 
     async def get(self, db: Session, item_id: UUID) -> Optional[ModelType]:
         return db.query(self.model).filter(self.model.id == item_id).first()
