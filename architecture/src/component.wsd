@@ -1,0 +1,64 @@
+@startuml Delivery
+
+database DeliveryDB
+database ProfileDB
+database ProfileCache #DarkKhaki
+database NotificationDB
+
+interface REST as BFF_D_INT
+interface REST as BFF_M_INT
+
+component BFF_Desktop as BD
+component BFF_Mobile as BM
+component Delivery as DLV
+component Auth as AA
+component Profile as PF
+component AdminPanel as AP
+component WebSite as WS
+component MobileApp as MA
+component Notification as Notify
+component PushNotify as PNotify
+
+BD <.up. BFF_D_INT
+BM <.up. BFF_M_INT
+
+BD -[#777777]-> DLV : REST
+BD <-[#777777]-> AA : REST
+BD -[#777777]-> Notify : REST 
+BD -[#777777]-> PF : REST
+
+
+BM --> DLV : REST
+BM <--> AA : REST
+BM --> Notify : REST 
+BM --> PF : REST
+
+PF -- ProfileDB
+PF -- ProfileCache
+DLV -- DeliveryDB
+Notify -- NotificationDB
+Notify -- PNotify : REST
+
+AP -[#777777]-> BFF_D_INT
+WS -[#777777]-> BFF_D_INT
+MA --> BFF_M_INT
+
+
+note right of BFF_D_INT : Web Service Only
+note right of BFF_M_INT : Web Service Only
+note bottom of ProfileCache: Database Redis.\nИспользуется для кэширования запросов
+note bottom of ProfileDB: Database PostgreSQL.\nХранение профили пользователей и их ролей
+note bottom of DeliveryDB: Database PostgreSQL.\nХранение информации о достаке
+note bottom of NotificationDB: Database PostgreSQL.\nХранение информации о нотификациях
+
+note bottom of AA : Сервис аутентификации и авторизации
+note bottom of PNotify : Сервис push-уведомлений
+note bottom of Notify : Сервис нотификаций
+note top of DLV : Сервис службы доставки
+note right of PF : Сервис управления\nпрофелями пользователей
+
+note top of AP : Веб-панель администратора
+note top of WS : Интернет-магазин (веб-сайт)
+note top of MA : Мобильное приложение Курьера
+
+@enduml
